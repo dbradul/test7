@@ -61,7 +61,6 @@ def generate_password(length, specials):
         )
     )
 
-
 @app.route('/who-is-on-duty')
 def get_astronauts():
     url = 'http://api.open-notify.org/astros.json'
@@ -73,6 +72,5 @@ def get_astronauts():
     for entry in result['people']:
         stats[entry['craft']] = stats.get(entry['craft'], 0) + 1
     return stats
-
 
 app.run(port=5004, debug=True)
