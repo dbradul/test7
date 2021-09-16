@@ -1,13 +1,10 @@
 import datetime
-import json
 import random
 import string
 
 import requests
-import faker
-import flask
 
-from flask import request, jsonify, Response, render_template
+from flask import jsonify, Response, render_template
 
 from flask import Flask
 from marshmallow import validate
