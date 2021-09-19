@@ -1,5 +1,6 @@
 import datetime
 import random
+import re
 import string
 
 import requests
@@ -11,7 +12,9 @@ from marshmallow import validate
 from webargs import fields
 from webargs.flaskparser import use_kwargs
 
+from db import execute_query
 from http_status import HTTP_200_OK, HTTP_204_NO_CONTENT
+from utils import format_records
 
 app = Flask(__name__)
 
@@ -69,5 +72,40 @@ def get_astronauts():
     for entry in result['people']:
         stats[entry['craft']] = stats.get(entry['craft'], 0) + 1
     return stats
+
+
+@app.route('/customers')
+@use_kwargs(
+    {
+        "first_name": fields.Str(
+            required=False,
+            missing=None,
+            validate=[validate.Regexp('^[0-9]*')]
+        ),
+        "last_name": fields.Str(
+            required=False,
+            missing=None,
+            validate=[validate.Regexp('^[0-9]*')]
+        ),
+    },
+    location="query",
+)
+def get_customers(first_name, last_name):
+    query = 'select * from customers'
+
+    fields = {}
+    if first_name:
+        fields["FirstName"] = first_name
+
+    if last_name:
+        fields["LastName"] = last_name
+
+    if fields:
+        query += ' WHERE ' + ' AND '.join(f'{k}="{v}"' for k, v in fields.items())
+
+    records = execute_query(query)
+    result = format_records(records)
+    return result
+
 
 app.run(port=5004, debug=True)
