@@ -8,6 +8,7 @@ requests = "*"
 flask = "*"
 faker = "*"
 webargs = "*"
+ipython = "*"
 
 [requires]
 python_version = "3.8"

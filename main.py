@@ -14,7 +14,7 @@ from webargs.flaskparser import use_kwargs
 
 from db import execute_query
 from http_status import HTTP_200_OK, HTTP_204_NO_CONTENT
-from utils import format_records
+from utils import format_records, profile
 
 app = Flask(__name__)
 
@@ -108,4 +108,60 @@ def get_customers(first_name, last_name):
     return result
 
 
+
+@app.route('/customers2')
+@use_kwargs(
+    {
+        "text": fields.Str(
+            required=False,
+            missing=None,
+        ),
+    },
+    location="query",
+)
+@profile()
+def get_customers2(text):
+    query = 'select * from customers'
+    records = execute_query(query)
+
+    text_fields = ['FirstName', 'LastName', 'Email']
+    results = []
+    if text:
+        for rec in records:
+            if any(text in str(field) for field in rec if field in text_fields):
+                results.append(rec)
+    else:
+        results = records
+
+    result = format_records(results)
+    return result
+
+
+@app.route('/customers3')
+@use_kwargs(
+    {
+        "text": fields.Str(
+            required=False,
+            missing=None,
+        ),
+    },
+    location="query",
+)
+@profile()
+def get_customers3(text):
+    query = 'select * from customers'
+
+    text_fields = ['CustomerId', 'FirstName', 'LastName', 'Email']
+
+    if text:
+        query += ' WHERE ' + ' OR '.join(f'{field} like ?' for field in text_fields)
+
+    records = execute_query(query, (f'%{text}%',) * len(text_fields))
+    result = format_records(records)
+
+    return result
+
+
 app.run(port=5004, debug=True)
+
+
