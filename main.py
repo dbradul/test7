@@ -3,6 +3,7 @@ import random
 import re
 import string
 
+import faker
 import requests
 
 from flask import jsonify, Response, render_template
@@ -29,13 +30,16 @@ def handle_error(err):
     else:
         return jsonify({"errors": messages}), err.code
 
+
 @app.route("/")
 def hello_world():
     return "Hello, World!"
 
+
 @app.route("/now")
 def get_current_time():
     return str(datetime.datetime.now())
+
 
 @app.route("/password")
 @use_kwargs(
@@ -60,6 +64,7 @@ def generate_password(length, specials):
             k=length,
         )
     )
+
 
 @app.route('/who-is-on-duty')
 def get_astronauts():
@@ -106,6 +111,39 @@ def get_customers(first_name, last_name):
     records = execute_query(query)
     result = format_records(records)
     return result
+
+
+@app.route('/unique_names')
+def get_unique_names():
+    query = 'SELECT DISTINCT FirstName FROM customers;'
+    records = execute_query(query)
+    # print(records)
+    return "Unique names: " + "".join(str(len(records)))
+
+
+@app.route('/tracks_count')
+def get_tracks_count():
+    query = 'SELECT COUNT(*) FROM Tracks;'
+    records = execute_query(query)
+    print(records)
+    return "Count of records from Tracks: " + "".join(str(records[0][0]))
+
+
+@app.route('/sales')
+def get_sales():
+    query = 'SELECT Quantity, UnitPrice, SUM(Quantity * UnitPrice) FROM Invoice_Items;'
+    records = execute_query(query)
+    return "Total sum: " + "".join(str(records[0][2]))
+
+
+@app.route('/fill_companies')
+def fill_companies():
+    fake = faker.Factory.create()
+
+    query = 'UPDATE customers ' \
+            'SET Company = "%s" ' \
+            'WHERE Company ISNULL;' % (fake.company())
+    record = execute_query(query)
 
 
 app.run(port=5004, debug=True)
