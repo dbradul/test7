@@ -152,16 +152,16 @@ def get_customers3(text):
     query = 'select * from customers'
 
     text_fields = ['CustomerId', 'FirstName', 'LastName', 'Email']
+    params = ()
 
     if text:
         query += ' WHERE ' + ' OR '.join(f'{field} like ?' for field in text_fields)
+        params = (f'%{text}%',) * len(text_fields)
 
-    records = execute_query(query, (f'%{text}%',) * len(text_fields))
+    records = execute_query(query, params)
     result = format_records(records)
 
     return result
 
 
 app.run(port=5004, debug=True)
-
-
